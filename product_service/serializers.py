@@ -1,10 +1,14 @@
+import pytz
+from datetime import datetime
 from rest_framework import serializers
 from .utils import to_indonesia_timezone
 from .models import Product, Variant
+from django.conf import settings
 
 
 STATUS_FAILED = "failed"
 STATUS_SUCCESS = "success"
+INDONESIA_TIMEZONE = pytz.timezone('Asia/Jakarta')
 
 
 class VariantSerializer(serializers.ModelSerializer):
@@ -18,6 +22,9 @@ class VariantSerializer(serializers.ModelSerializer):
         representation.pop('active_time')
         representation['created_at'] = to_indonesia_timezone(
             representation['created_at'])
+
+        for field in ['height', 'price', 'weight']:
+            representation[field] = float(representation[field])
         return representation
 
 
@@ -88,6 +95,10 @@ class ProductSerializer(serializers.ModelSerializer, CustromErrorSerializer):
         product = Product.objects.create(**validated_data)
         variants = []
         for variant_data in variants_data:
+            variant_data['active_time'] = variant_data['active_time'].replace(
+                tzinfo=INDONESIA_TIMEZONE)
+            if variant_data['active_time'].strftime('%s') <= datetime.now(INDONESIA_TIMEZONE).strftime('%s'):
+                variant_data['is_active'] = True
             variants.append(Variant(product=product, **variant_data))
 
         if len(variants) > 0:
@@ -104,5 +115,6 @@ class ProductSerializer(serializers.ModelSerializer, CustromErrorSerializer):
 class ProductLimitVariantsSerializer(ProductSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['variants'] = representation['variants'][:2]
+        representation['variants'] = representation['variants'][:
+                                                                settings.VARIANT_LIMIT_PER_PRODUCT]
         return representation

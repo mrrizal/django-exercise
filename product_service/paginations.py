@@ -1,8 +1,7 @@
 from rest_framework.pagination import CursorPagination
-from rest_framework.response import Response
-from collections import OrderedDict
+from django.conf import settings
 
 
 class CustomPagination(CursorPagination):
-    page_size = 10
+    page_size = settings.PRODUCT_LIMIT_PER_PAGE
     ordering = '-created_at'

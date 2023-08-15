@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 import colorlog
+from dotenv import load_dotenv
+
+load_dotenv()
+
+ENV = os.getenv("ENV")
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -78,8 +83,15 @@ WSGI_APPLICATION = 'julo.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
+        'OPTIONS': {
+            'options': '-c timezone=UTC',
+        },
     }
 }
 
@@ -157,3 +169,9 @@ LOGGING = {
         },
     },
 }
+
+if ENV == "prod":
+    LOGGING = {}
+
+PRODUCT_LIMIT_PER_PAGE = int(os.getenv("PRODUCT_LIMIT_PER_PAGE"))
+VARIANT_LIMIT_PER_PRODUCT = int(os.getenv("VARIANT_LIMIT_PER_PRODUCT"))
