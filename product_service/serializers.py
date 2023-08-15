@@ -11,6 +11,11 @@ class VariantSerializer(serializers.ModelSerializer):
         fields = ('name', 'height', 'stock', 'price',
                   'weight', 'created_at', 'is_active', 'active_time')
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop('active_time')
+        return representation
+
 
 class CustromErrorSerializer(serializers.BaseSerializer):
     def is_valid(self, raise_exception=False):
@@ -85,6 +90,11 @@ class ProductSerializer(serializers.ModelSerializer, CustromErrorSerializer):
             Variant.objects.bulk_create(variants)
 
         return product
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop('created_at')
+        return representation
 
 
 class ProductLimitVariantsSerializer(ProductSerializer):
