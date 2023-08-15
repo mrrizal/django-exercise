@@ -85,3 +85,10 @@ class ProductSerializer(serializers.ModelSerializer, CustromErrorSerializer):
             Variant.objects.bulk_create(variants)
 
         return product
+
+
+class ProductLimitVariantsSerializer(ProductSerializer):
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['variants'] = representation['variants'][:2]
+        return representation
