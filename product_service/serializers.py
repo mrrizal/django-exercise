@@ -1,5 +1,7 @@
 from rest_framework import serializers
+from .utils import to_indonesia_timezone
 from .models import Product, Variant
+
 
 STATUS_FAILED = "failed"
 STATUS_SUCCESS = "success"
@@ -14,6 +16,8 @@ class VariantSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation.pop('active_time')
+        representation['created_at'] = to_indonesia_timezone(
+            representation['created_at'])
         return representation
 
 

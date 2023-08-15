@@ -1,8 +1,12 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
-from django.db.models import Prefetch
-from .models import Product, Variant
-from .serializers import ProductSerializer, STATUS_SUCCESS, ProductLimitVariantsSerializer
+from datetime import datetime
+from .utils import to_indonesia_timezone
+from .models import Product
+from .serializers import (
+    ProductSerializer,
+    STATUS_SUCCESS,
+    ProductLimitVariantsSerializer)
 from .paginations import CustomPagination
 
 
@@ -26,6 +30,20 @@ class ProductViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         self.serializer_class = ProductLimitVariantsSerializer
+
+        datetime_format = "%d-%m-%YT%H:%M:%S"
+        created_at_gte = request.GET.get('created_at_gte', None)
+        created_at_lte = request.GET.get('created_at_lte', None)
+
+        if created_at_gte:
+            created_at_gte = to_indonesia_timezone(
+                f'{created_at_gte}T00:00:00', datetime_format)
+            queryset = queryset.filter(created_at__gte=created_at_gte)
+
+        if created_at_lte:
+            created_at_lte = to_indonesia_timezone(
+                f'{created_at_lte}T23:59:59', datetime_format)
+            queryset = queryset.filter(created_at__lte=created_at_lte)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
