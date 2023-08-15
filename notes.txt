@@ -1,0 +1,9 @@
+product:
+- product name must be unique
+
+variant:
+- variant name must be unique for every product
+- active time at post method, it's used for to update is_active field automaticly:
+    what happen if it's less than now?, the variant will automaticly active
+
+notes: all fields cannot be null or blank
