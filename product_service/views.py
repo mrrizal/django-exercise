@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from .models import Product, Variant
-from .serializers import ProductSerializer
+from .serializers import ProductSerializer, STATUS_SUCCESS
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -12,29 +12,10 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        return Response(serializer.data, status=201)
 
+        n_variant = len(serializer.data['variants'])
+        message = f"success create 1 product with {n_variant} variants"
+        if n_variant <= 1:
+            message = f"success create 1 product with {n_variant} variant"
 
-# class VariantViewSet(viewsets.ViewSet):
-#     def create(self, request, product_pk=None):
-#         try:
-#             product = Product.objects.get(pk=product_pk)
-#         except Product.DoesNotExist:
-#             return Response({'error': 'Product not found'}, status=404)
-
-#         serializer = ProductSerializer(data=request.data)
-#         if serializer.is_valid():
-#             variant_data = serializer.validated_data.pop('variants')[0]
-#             Variant.objects.create(product=product, **variant_data)
-#             return Response(serializer.data, status=201)
-#         return Response(serializer.errors, status=400)
-
-#     def list(self, request, product_pk=None):
-#         try:
-#             product = Product.objects.get(pk=product_pk)
-#         except Product.DoesNotExist:
-#             return Response({'error': 'Product not found'}, status=404)
-
-#         variants = product.variants.all()
-#         serializer = VariantSerializer(variants, many=True)
-#         return Response(serializer.data)
+        return Response({"status": STATUS_SUCCESS, "message": message}, status=201)
