@@ -35,15 +35,26 @@ class ProductViewSet(viewsets.ModelViewSet):
         created_at_gte = request.GET.get('created_at_gte', None)
         created_at_lte = request.GET.get('created_at_lte', None)
 
+        empty_result = {
+            "next": None,
+            "previous": None,
+            "results": []
+        }
         if created_at_gte:
-            created_at_gte = to_indonesia_timezone(
-                f'{created_at_gte}T00:00:00', datetime_format)
-            queryset = queryset.filter(created_at__gte=created_at_gte)
+            try:
+                created_at_gte = to_indonesia_timezone(
+                    f'{created_at_gte}T00:00:00', datetime_format)
+                queryset = queryset.filter(created_at__gte=created_at_gte)
+            except ValueError:
+                return Response(empty_result)
 
         if created_at_lte:
-            created_at_lte = to_indonesia_timezone(
-                f'{created_at_lte}T23:59:59', datetime_format)
-            queryset = queryset.filter(created_at__lte=created_at_lte)
+            try:
+                created_at_lte = to_indonesia_timezone(
+                    f'{created_at_lte}T23:59:59', datetime_format)
+                queryset = queryset.filter(created_at__lte=created_at_lte)
+            except ValueError:
+                return Response(empty_result)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
