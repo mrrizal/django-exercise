@@ -1,4 +1,28 @@
 services:
+  app:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=julo.settings
+    depends_on:
+      - db
+      - message-broker
+
+  celery-worker:
+    build: .
+    command: celery --app julo worker --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=julo.settings
+    depends_on:
+      - db
+      - message-broker
+
   db:
     platform: linux/x86_64
     image: postgres:14.1-alpine
