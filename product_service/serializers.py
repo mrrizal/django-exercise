@@ -28,6 +28,9 @@ class VariantSerializer(serializers.ModelSerializer):
 
         for field in ['height', 'price', 'weight']:
             representation[field] = float(representation[field])
+            if field == 'price':
+                representation[field] = int(representation[field])
+
         return representation
 
 
