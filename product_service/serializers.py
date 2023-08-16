@@ -1,9 +1,12 @@
 import pytz
+
 from datetime import datetime
 from rest_framework import serializers
+from django.conf import settings
+
 from .utils import to_indonesia_timezone
 from .models import Product, Variant
-from django.conf import settings
+from .tasks import activate_variant
 
 
 STATUS_FAILED = "failed"
@@ -88,11 +91,7 @@ class ProductSerializer(serializers.ModelSerializer, CustromErrorSerializer):
                 raise serializers.ValidationError(err_message)
             names[data['name']] = True
 
-    def create(self, validated_data):
-        variants_data = validated_data.pop('variants')
-        self.validate_variants_name(variants_data)
-
-        product = Product.objects.create(**validated_data)
+    def save_variants(self, product, variants_data):
         variants = []
         for variant_data in variants_data:
             variant_data['active_time'] = variant_data['active_time'].replace(
@@ -102,7 +101,22 @@ class ProductSerializer(serializers.ModelSerializer, CustromErrorSerializer):
             variants.append(Variant(product=product, **variant_data))
 
         if len(variants) > 0:
-            Variant.objects.bulk_create(variants)
+            saved_variants = Variant.objects.bulk_create(variants)
+            for variant in saved_variants:
+                if not variant.is_active:
+                    now = datetime.now(INDONESIA_TIMEZONE)
+                    countdown = int(variant.active_time.strftime(
+                        '%s')) - int(now.strftime('%s'))
+                    activate_variant.apply_async(
+                        kwargs={"variant_id": variant.id}, countdown=countdown
+                    )
+
+    def create(self, validated_data):
+        variants_data = validated_data.pop('variants')
+        self.validate_variants_name(variants_data)
+
+        product = Product.objects.create(**validated_data)
+        self.save_variants(product, variants_data)
 
         return product
 
