@@ -17,6 +17,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+  message-broker:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - .env.rabbitmq
 volumes:
   db:
     driver: local
