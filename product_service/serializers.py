@@ -91,6 +91,7 @@ class ProductSerializer(serializers.ModelSerializer, CustromErrorSerializer):
                 raise serializers.ValidationError(err_message)
             names[data['name']] = True
 
+    # this function also will update is_active value with background task
     def save_variants(self, product, variants_data):
         variants = []
         for variant_data in variants_data:
