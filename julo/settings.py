@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_dbconn_retry',
     'rest_framework',
     'product_service'
 ]
@@ -105,6 +106,11 @@ else:
             'PORT': os.getenv('DB_PORT'),
             'OPTIONS': {
                 'options': '-c timezone=UTC',
+            },
+            'POOL_OPTIONS': {
+                'maxconn': 200,
+                'minconn': 20,
+                'retry_max': 5,
             },
         }
     }

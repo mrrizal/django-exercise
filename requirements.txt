@@ -9,6 +9,7 @@ click-repl==0.3.0
 colorlog==6.7.0
 coverage==7.3.0
 Django==1.11.29
+django-dbconn-retry==0.1.7
 djangorestframework==3.9.0
 kombu==5.3.1
 prompt-toolkit==3.0.39
