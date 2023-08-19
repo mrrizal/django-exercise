@@ -42,6 +42,15 @@ services:
       timeout: 5s
       retries: 3
 
+  pg_bouncer:
+    image: bitnami/pgbouncer:latest
+    env_file:
+      - .env.pgbouncer
+    ports:
+      - "6432:6432"
+    depends_on:
+      - db
+
   message-broker:
     image: "rabbitmq:3-management"
     ports:

@@ -105,9 +105,12 @@ class ProductSerializer(serializers.ModelSerializer, CustromErrorSerializer):
             variants.append(Variant(product=product, **variant_data))
 
         if len(variants) > 0:
-            saved_variants = Variant.objects.bulk_create(variants)
-            for variant in saved_variants:
+            # the bulk_create method return list, not just for loop directly
+            # don't store it first to temp variable,
+            # it's use more memory, specially when dealing with a lot of data
+            for variant in Variant.objects.bulk_create(variants, batch_size=50):
                 if not variant.is_active:
+                    # pake eta
                     now = datetime.now(INDONESIA_TIMEZONE)
                     countdown = int(variant.active_time.strftime(
                         '%s')) - int(now.strftime('%s'))
