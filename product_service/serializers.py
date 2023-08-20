@@ -1,10 +1,10 @@
 import pytz
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from rest_framework import serializers
 from django.conf import settings
 
-from .utils import to_indonesia_timezone
+from .utils import to_indonesia_timezone, chunks
 from .models import Product, Variant
 from .tasks import activate_variant
 
@@ -108,15 +108,14 @@ class ProductSerializer(serializers.ModelSerializer, CustromErrorSerializer):
             # the bulk_create method return list, not just for loop directly
             # don't store it first to temp variable,
             # it's use more memory, specially when dealing with a lot of data
-            for variant in Variant.objects.bulk_create(variants, batch_size=50):
-                if not variant.is_active:
-                    # pake eta
-                    now = datetime.now(INDONESIA_TIMEZONE)
-                    countdown = int(variant.active_time.strftime(
-                        '%s')) - int(now.strftime('%s'))
-                    activate_variant.apply_async(
-                        kwargs={"variant_id": variant.id}, countdown=countdown
-                    )
+            for chunked_variants in chunks(variants, 50):
+                for variant in Variant.objects.bulk_create(chunked_variants):
+                    if not variant.is_active:
+                        now = datetime.now(INDONESIA_TIMEZONE)
+                        countdown = int(variant.active_time.strftime(
+                            '%s')) - int(now.strftime('%s'))
+                        activate_variant.apply_async(
+                            kwargs={"variant_id": variant.id}, eta=now + timedelta(seconds=countdown))
 
     def create(self, validated_data):
         variants_data = validated_data.pop('variants')

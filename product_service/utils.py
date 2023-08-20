@@ -7,3 +7,9 @@ def to_indonesia_timezone(utc_time, datetime_format="%Y-%m-%dT%H:%M:%S.%f%z"):
     utc_time = datetime.strptime(utc_time, datetime_format)
     indonesia_time = utc_time.astimezone(indonesia_timezone)
     return indonesia_time
+
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
