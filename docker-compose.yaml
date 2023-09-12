@@ -26,7 +26,6 @@ services:
   db:
     platform: linux/x86_64
     image: postgres:14.1-alpine
-    restart: always
     env_file:
       - .env.postgres
     ports:
