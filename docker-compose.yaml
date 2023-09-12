@@ -11,6 +11,8 @@ services:
     depends_on:
       - db
       - message-broker
+    networks:
+      - django-exercise-network
 
   celery-worker:
     build: .
@@ -22,6 +24,8 @@ services:
     depends_on:
       - db
       - message-broker
+    networks:
+      - django-exercise-network
 
   db:
     platform: linux/x86_64
@@ -40,15 +44,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-
-  pg_bouncer:
-    image: bitnami/pgbouncer:latest
-    env_file:
-      - .env.pgbouncer
-    ports:
-      - "6432:6432"
-    depends_on:
-      - db
+    networks:
+      - django-exercise-network
 
   message-broker:
     image: "rabbitmq:3-management"
@@ -57,6 +54,12 @@ services:
       - "15672:15672"
     env_file:
       - .env.rabbitmq
+    networks:
+      - django-exercise-network
+
 volumes:
   db:
     driver: local
+
+networks:
+  django-exercise-network:
