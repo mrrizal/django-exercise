@@ -3,6 +3,7 @@ import pytz
 from datetime import datetime, timedelta
 from rest_framework import serializers
 from django.conf import settings
+from memory_profiler import profile
 
 from .utils import to_indonesia_timezone, chunks
 from .models import Product, Variant
@@ -95,6 +96,7 @@ class ProductSerializer(serializers.ModelSerializer, CustromErrorSerializer):
             names[data['name']] = True
 
     # this function also will update is_active value with background task
+    @profile(precision=4)
     def save_variants(self, product, variants_data):
         variants = []
         for variant_data in variants_data:
@@ -105,18 +107,16 @@ class ProductSerializer(serializers.ModelSerializer, CustromErrorSerializer):
             variants.append(Variant(product=product, **variant_data))
 
         if len(variants) > 0:
-            # the bulk_create method return list, not just for loop directly
-            # don't store it first to temp variable,
-            # it's use more memory, specially when dealing with a lot of data
-            for chunked_variants in chunks(variants, 50):
-                for variant in Variant.objects.bulk_create(chunked_variants):
-                    if not variant.is_active:
-                        now = datetime.now(INDONESIA_TIMEZONE)
-                        countdown = int(variant.active_time.strftime(
-                            '%s')) - int(now.strftime('%s'))
-                        activate_variant.apply_async(
-                            kwargs={"variant_id": variant.id}, eta=now + timedelta(seconds=countdown))
+            inserted_variants = Variant.objects.bulk_create(variants)
+            for variant in inserted_variants:
+                if not variant.is_active:
+                    now = datetime.now(INDONESIA_TIMEZONE)
+                    countdown = int(variant.active_time.strftime(
+                        '%s')) - int(now.strftime('%s'))
+                    activate_variant.apply_async(
+                        kwargs={"variant_id": variant.id}, eta=now + timedelta(seconds=countdown))
 
+    @profile(precision=4)
     def create(self, validated_data):
         variants_data = validated_data.pop('variants')
         self.validate_variants_name(variants_data)
