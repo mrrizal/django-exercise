@@ -31,12 +31,17 @@ class ProductViewSet(viewsets.ModelViewSet):
         """
         Override this method to apply custom filtering logic.
         """
-        # You can add custom filtering logic here if needed
+        empty_result = {
+            "next": None,
+            "previous": None,
+            "results": []
+        }
+
         datetime_format = "%d-%m-%YT%H:%M:%S"
         created_at_gte = request.GET.get('created_at_gte', None)
         created_at_lte = request.GET.get('created_at_lte', None)
 
-                if created_at_gte:
+        if created_at_gte:
             try:
                 created_at_gte = to_indonesia_timezone(
                     f'{created_at_gte}T00:00:00', datetime_format)
@@ -57,13 +62,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         self.serializer_class = ProductLimitVariantsSerializer
 
-
-
         empty_result = {
             "next": None,
             "previous": None,
             "results": []
         }
+
+        datetime_format = "%d-%m-%YT%H:%M:%S"
 
         if created_at_gte:
             try:
