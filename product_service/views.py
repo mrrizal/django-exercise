@@ -27,19 +27,44 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         return Response({"status": STATUS_SUCCESS, "message": message}, status=201)
 
+    def filter_queryset(self, request, queryset):
+        """
+        Override this method to apply custom filtering logic.
+        """
+        # You can add custom filtering logic here if needed
+        datetime_format = "%d-%m-%YT%H:%M:%S"
+        created_at_gte = request.GET.get('created_at_gte', None)
+        created_at_lte = request.GET.get('created_at_lte', None)
+
+                if created_at_gte:
+            try:
+                created_at_gte = to_indonesia_timezone(
+                    f'{created_at_gte}T00:00:00', datetime_format)
+                queryset = queryset.filter(created_at__gte=created_at_gte)
+            except ValueError:
+                return Response(empty_result)
+
+        if created_at_lte:
+            try:
+                created_at_lte = to_indonesia_timezone(
+                    f'{created_at_lte}T23:59:59', datetime_format)
+                queryset = queryset.filter(created_at__lte=created_at_lte)
+            except ValueError:
+                return Response(empty_result)
+        return queryset
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         self.serializer_class = ProductLimitVariantsSerializer
 
-        datetime_format = "%d-%m-%YT%H:%M:%S"
-        created_at_gte = request.GET.get('created_at_gte', None)
-        created_at_lte = request.GET.get('created_at_lte', None)
+
 
         empty_result = {
             "next": None,
             "previous": None,
             "results": []
         }
+
         if created_at_gte:
             try:
                 created_at_gte = to_indonesia_timezone(
