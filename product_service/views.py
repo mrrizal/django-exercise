@@ -27,7 +27,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         return Response({"status": STATUS_SUCCESS, "message": message}, status=201)
 
-    def filter_queryset(self, request, queryset):
+    def filter_queryset_updated(self, request, queryset):
         """
         Override this method to apply custom filtering logic.
         """
@@ -69,6 +69,8 @@ class ProductViewSet(viewsets.ModelViewSet):
         }
 
         datetime_format = "%d-%m-%YT%H:%M:%S"
+        created_at_gte = request.GET.get('created_at_gte', None)
+        created_at_lte = request.GET.get('created_at_lte', None)
 
         if created_at_gte:
             try:
