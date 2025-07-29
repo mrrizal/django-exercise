@@ -31,11 +31,3 @@ jobs:
       - name: Run tests
         run: |
           python manage.py test
-
-  code_review:
-    name: Code Review
-    uses: mrrizal/python-pr-analyzer/.github/workflows/pr_analyzer.yml@main
-    with:
-      repository: ${{ github.repository }}
-    secrets:
-      token: ${{ secrets.GITHUB_TOKEN }}
