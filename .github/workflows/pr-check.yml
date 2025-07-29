@@ -32,17 +32,9 @@ jobs:
         run: |
           python manage.py test
 
-      - name: Run PR Analysis
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_KEY: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            export PR_NUMBER=${{ github.event.pull_request.number }}
-            export REPO="${{ github.repository }}"
-          else
-            export PR_NUMBER=${{ github.event.inputs.pr_number }}
-            export REPO="${{ github.event.inputs.repo }}"
-          fi
-
-          python pr_analyzer.py --repo "$REPO" --pr "$PR_NUMBER"
+  code_review:
+    uses: mrrizal/python-pr-analyzer/.github/workflows/pr_analyzer.yml@main
+    with:
+      some-input: ${{ github.repository }}
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
