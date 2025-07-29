@@ -37,5 +37,6 @@ jobs:
     uses: mrrizal/python-pr-analyzer/.github/workflows/pr_analyzer.yml@main
     with:
       repository: ${{ github.repository }}
+      pr_number: ${{ github.event.pull_request.number }}
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
