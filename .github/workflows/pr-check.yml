@@ -33,6 +33,7 @@ jobs:
           python manage.py test
 
   code_review:
+    name: Code Review
     uses: mrrizal/python-pr-analyzer/.github/workflows/pr_analyzer.yml@main
     with:
       repository: ${{ github.repository }}
