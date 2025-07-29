@@ -35,6 +35,6 @@ jobs:
   code_review:
     uses: mrrizal/python-pr-analyzer/.github/workflows/pr_analyzer.yml@main
     with:
-      some-input: ${{ github.repository }}
+      repository: ${{ github.repository }}
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
