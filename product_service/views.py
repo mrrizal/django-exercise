@@ -15,18 +15,6 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     pagination_class = CustomPagination
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-
-        n_variant = len(serializer.data['variants'])
-        message = f"success create 1 product with {n_variant} variants"
-        if n_variant <= 1:
-            message = f"success create 1 product with {n_variant} variant"
-
-        return Response({"status": STATUS_SUCCESS, "message": message}, status=201)
-
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         self.serializer_class = ProductLimitVariantsSerializer
