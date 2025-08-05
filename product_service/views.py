@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import viewsets
 from rest_framework.response import Response
 
@@ -27,6 +28,13 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         return Response({"status": STATUS_SUCCESS, "message": message}, status=201)
 
+    def is_valid_date(self, date_str):
+        try:
+            datetime.strptime(date_str, "%Y-%m-%d")
+            return True
+        except ValueError:
+            return False
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         self.serializer_class = ProductLimitVariantsSerializer
@@ -40,7 +48,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             "previous": None,
             "results": []
         }
-        if created_at_gte:
+        if created_at_gte and self.is_valid_date(created_at_gte):
             try:
                 created_at_gte = to_indonesia_timezone(
                     f'{created_at_gte}T00:00:00', datetime_format)
@@ -48,7 +56,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             except ValueError:
                 return Response(empty_result)
 
-        if created_at_lte:
+        if created_at_lte and self.is_valid_date(created_at_lte):
             try:
                 created_at_lte = to_indonesia_timezone(
                     f'{created_at_lte}T23:59:59', datetime_format)
